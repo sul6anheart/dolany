@@ -2,12 +2,41 @@
 if(isset($_GET['check_mobile_number']) and $_GET['check_mobile_number'] == "true")
 {
   $user_info = row_one("users", "mobile='".$_POST['mobile']."'", "");
-
+  die();
+}
+if(isset($_GET['conf_notification']) and $_GET['conf_notification'] == "true")
+{
+  include_once "../../conf.php";
+  $get_code = row_one("camp_licenses", "code='".$_POST['code']."'", "");
+  if(!empty($get_code))
+  {
+    $val = array();
+    $val['status'] = 2;
+    update("notifications", $val, "id='".$_POST['id']."'");
+    $op = array();
+    $id = generate_rand_num("operations", "id", 1, 8, 4, 3);
+    $op['id'] = $id;
+    $op['user_id'] = $user_info['id'];
+    $op['notify_id'] = $_POST['id'];
+    $op['operation_name'] = 'تأكيد تسليم الحاج';
+    $op['created_at'] = date("Y-m-d H:i:s");
+    Insertdb("operations", $op);
+    echo '<div class="alert alert-success">تمّ تأكيد تسليم الحاج بنجاح، نشكر لك جهودك ونسأل الله أن يبارك لك في وقتك وعملك وأن يجزيك الثواب العظيم.</div>';
+  }else {
+    echo '<div class="alert alert-danger">عفوًا رقم الترخيص خاطئ</div>';
+  }
   die();
 }
 if(isset($_GET['r_notification']) and $_GET['r_notification'] == "true")
 {
   include_once "../../conf.php";
+  $check_notification = row_one("notifications", "id='".$_POST['id']."'", "");
+  if($check_notification['status'] == 1)
+  {
+    echo '<div class="alert alert-warning">تمّ تعميد الطلب مسبقًا، شكرا لتفهمك.</div>';
+    die();
+  }
+
   $user_info = row_one("users", "mobile='".$_POST['mobile']."'", "");
   if(!empty($user_info))
   {
@@ -22,9 +51,9 @@ if(isset($_GET['r_notification']) and $_GET['r_notification'] == "true")
     $op['operation_name'] = 'العثور على حاج تائه';
     $op['created_at'] = date("Y-m-d H:i:s");
     Insertdb("operations", $op);
-    echo 'تمّ تعميد استلام البلاغ، نشكر لك تعاونك ونسأل الله أن يكتب لك الأجر العظيم تجاه ما تقوم به.';
+    echo '<div class="alert alert-success">تمّ تعميد استلام البلاغ، نشكر لك تعاونك ونسأل الله أن يكتب لك الأجر العظيم تجاه ما تقوم به.</div>';
   }else {
-    echo 'لا يمكن استلام البلاغ نظرًا لأنّ رقم جوالك غير موجود بقاعدتنا.';
+    echo '<div class="alert alert-danger">لا يمكن استلام البلاغ نظرًا لأنّ رقم جوالك غير موجود بقاعدتنا.</div>';
   }
   die();
 }
